@@ -140,8 +140,8 @@ body{background:linear-gradient(-45deg,#0F172A,#1E293B,#3b0a14,#0F172A);backgrou
 <script>
 /* ===== CONFIGURE THESE 3 LINES ===== */
 const FLOW_URL='https://default37cd273a1cec4aaea29741480ea54f.8d.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/11/workflows/67b9431663ac484f97d054e320d27af8/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=1fDTD1W5AtePZQ2UrOD1t5lp8Nd2CZxCEBjnauRwApQ';        // HTTP POST URL of flow 1
-const RESPONSE_URL='PASTE_PUBLIC_URL_OF_response.html';         // where you host response.html (https://...)
-const OBSERVER_EMAIL='PASTE_OBSERVER_EMAIL@amns.in';          // Dattu Labade's mailbox – closure report is sent back here
+const RESPONSE_URL='https://rahulamns0208.github.io/obs-close-/';         // where you host response.html (https://...)
+const OBSERVER_EMAIL='dattu.labade@amns.in';          // Dattu Labade's mailbox – closure report is sent back here
 const REVIEWER_EMAIL='PASTE_REVIEWER_EMAIL@amns.in';            // optional reviewer/central compliance email, configured by admin
 /* ==================================== */
 const mkToken=()=>(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2)).replace(/-/g,'');
