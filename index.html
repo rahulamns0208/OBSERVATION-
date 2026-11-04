@@ -139,8 +139,9 @@ body{background:linear-gradient(-45deg,#0F172A,#1E293B,#3b0a14,#0F172A);backgrou
 <div id="okOv"><div class="ok-card"><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="25"/><path d="M14 27l8 8 16-17"/></svg><h2>Submitted!</h2><p id="okMsg"></p><button class="btn-submit" style="max-width:100%" onclick="document.getElementById('okOv').classList.remove('show')">New Observation</button></div></div>
 <script>
 /* ===== CONFIGURE THESE 3 LINES ===== */
-const FLOW_URL='https://default37cd273a1cec4aaea29741480ea54f.8d.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/11/workflows/644fc7bbd86e47059bd035e9a8b2b3e4/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=Eo29WGRp_ywyvm_b_yr2puGPMTxOhfYa2KGAwwnmfDs';        // HTTP POST URL of flow 1
+const FLOW_URL='https://default37cd273a1cec4aaea29741480ea54f.8d.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/11/workflows/67b9431663ac484f97d054e320d27af8/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=1fDTD1W5AtePZQ2UrOD1t5lp8Nd2CZxCEBjnauRwApQ';        // HTTP POST URL of flow 1
 const RESPONSE_URL='PASTE_PUBLIC_URL_OF_response.html';         // where you host response.html (https://...)
+const OBSERVER_EMAIL='PASTE_OBSERVER_EMAIL@amns.in';          // Dattu Labade's mailbox – closure report is sent back here
 const REVIEWER_EMAIL='PASTE_REVIEWER_EMAIL@amns.in';            // optional reviewer/central compliance email, configured by admin
 /* ==================================== */
 const mkToken=()=>(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2)).replace(/-/g,'');
@@ -207,19 +208,17 @@ const fmtDate=d=>d?d.split('-').reverse().join('.'):'';
 function shrink(file,max=800,q=.6){return new Promise(res=>{const r=new FileReader();r.onload=e=>{const i=new Image();i.onload=()=>{const s=Math.min(1,max/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=Math.round(i.width*s);c.height=Math.round(i.height*s);c.getContext('2d').drawImage(i,0,0,c.width,c.height);res({data:c.toDataURL('image/jpeg',q).split(',')[1],w:c.width,h:c.height})};i.onerror=()=>res(null);i.src=e.target.result};r.readAsDataURL(file)})}
 async function buildXlsx(rows){
   const wb=new ExcelJS.Workbook(),ws=wb.addWorksheet('Sheet1');
-  [6,13,12,20,38,18,62,26,12,28,24,22,16].forEach((w,i)=>ws.getColumn(i+1).width=w);
+  [6,13,12,20,38,18,40,26,12,28,24,22,16].forEach((w,i)=>ws.getColumn(i+1).width=w);
   const fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFCE4D6'}},thin={style:'thin'},med={style:'medium'};
   ws.mergeCells('A1:M1');const t=ws.getCell('A1');t.value=`AM/NS INDIA — Line Observation Report — ${$('lineSelect').value}`;t.font={name:'Arial',size:14,bold:true};t.fill=fill;t.alignment={horizontal:'center',vertical:'middle'};ws.getRow(1).height=30;
   ['Sr. No','Date','Line','Location','Observation','Responsibility','Photos','AFTER \nPHOTO','Status','Corrective action/\nRecommendation','Obs ID','Observer Name','Observer SAP ID'].forEach((h,i)=>{const c=ws.getCell(2,i+1);c.value=h;c.font={name:'Arial',size:12,bold:true};c.fill=fill;c.alignment={horizontal:'center',vertical:'middle',wrapText:true};c.border={top:med,bottom:med,left:thin,right:thin}});ws.getRow(2).height=47;
-  const PAD=6,H0=170,CAP=1400,MAXROW=540;
-  const lay=rows.map(o=>{const ph=o.photos||[],as=ph.map(p=>p.w/p.h),sa=as.reduce((x,y)=>x+y,0);let h=ph.length?Math.min(H0,MAXROW-2*PAD):0,tw=h*sa+PAD*(ph.length+1);if(ph.length&&tw>CAP){h=(CAP-PAD*(ph.length+1))/sa;tw=CAP}return{h,as,tw}});
-  const colW=Math.min(255,Math.max(40,Math.ceil((Math.max(...lay.map(l=>l.tw))+8)/7))),colPx=colW*7;ws.getColumn(7).width=colW;
-  for(let n=0;n<rows.length;n++){const o=rows[n],r=n+3,ph=o.photos||[];
+  const colPx=40*7+5,TW=130,TH=98;
+  for(let n=0;n<rows.length;n++){const o=rows[n],r=n+3,ph=o.photos||[],pr=Math.max(1,Math.ceil(ph.length/2)),rowPx=Math.max(110,pr*(TH+8)+8);
     [n+1,fmtDate(o.date),$('lineSelect').value,o.location,o.text,nameOf(o.assign),'','',o.status,'',o.id,$('observerName').value.trim(),$('sapId').value.trim()].forEach((v,i)=>{const c=ws.getCell(r,i+1);c.value=v;c.font={name:'Arial',size:12};c.alignment={horizontal:'center',vertical:'middle',wrapText:true};c.border={top:thin,bottom:thin,left:thin,right:thin}});
-    ws.getCell(r,9).dataValidation={type:'list',allowBlank:true,formulae:['"Open,Close"']};
-    const L=lay[n],hPt=Math.min(409,Math.max((L.h+2*PAD)*.75,Math.ceil(o.text.length/38)*16+10,45));ws.getRow(r).height=hPt;const actPx=hPt/.75;
-    let x=Math.max(PAD,(colPx-L.tw)/2+PAD);const y=Math.max(0,(actPx-L.h)/2);
-    ph.forEach((p,k)=>{const w=L.h*L.as[k],id=wb.addImage({base64:p.data,extension:'jpeg'});const E=9525,q=Math.round;ws.addImage(id,{tl:{nativeCol:6,nativeColOff:q(x*E),nativeRow:r-1,nativeRowOff:q(y*E)},br:{nativeCol:6,nativeColOff:q((x+w)*E),nativeRow:r-1,nativeRowOff:q((y+L.h)*E)},editAs:'twoCell'});x+=w+PAD})}
+    ws.getCell(r,9).dataValidation={type:'list',allowBlank:true,formulae:['"Open,Closed"']};
+    const hPt=Math.max(rowPx*.75,Math.ceil(o.text.length/38)*16+10);ws.getRow(r).height=hPt;const actPx=hPt/.75;
+    ph.forEach((p,k)=>{const s=Math.min(TW/p.w,TH/p.h),w=p.w*s,h=p.h*s,x=8+(k%2)*(TW+8),y=8+Math.floor(k/2)*(TH+8);
+      const id=wb.addImage({base64:p.data,extension:'jpeg'});ws.addImage(id,{tl:{col:6+x/colPx,row:r-1+y/actPx},ext:{width:w,height:h},editAs:'oneCell'})})}
   return wb.xlsx.writeBuffer();
 }
 const plus=(n)=>{const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)};
@@ -262,13 +261,14 @@ async function submitForm(){
   const st=$('statusMessage'),btn=$('submitBtn');btn.disabled=true;
   try{
     if(typeof ExcelJS==='undefined')throw new Error('Excel library not loaded (check internet).');
+    if(OBSERVER_EMAIL.startsWith('PASTE_'))throw new Error('Set OBSERVER_EMAIL at the top of the script first.');
     if(FLOW_URL.startsWith('PASTE_'))throw new Error('Set FLOW_URL at the top of the script first.');
     await flush();st.innerHTML='<span style="color:#F59E0B">⏳ Processing photos & building Excel...</span>';
-    const rows=await collect(),sid='SUB-'+Date.now(),token=mkToken(),link=RESPONSE_URL.startsWith('PASTE_')?'':`${RESPONSE_URL}${RESPONSE_URL.includes('?')?'&':'?'}s=${encodeURIComponent(sid)}&t=${token}`,groups={},due=plus(2);
+    const rows=await collect(),sid='SUB-'+Date.now(),tokens={},linkFor=e=>{tokens[e]=tokens[e]||mkToken();return RESPONSE_URL.startsWith('PASTE_')?'':`${RESPONSE_URL}${RESPONSE_URL.includes('?')?'&':'?'}s=${encodeURIComponent(sid)}&t=${tokens[e]}`},groups={},due=plus(2);
     rows.forEach(r=>(groups[r.assign]=groups[r.assign]||[]).push(r));
-    const assignments=[];for(const [email,list] of Object.entries(groups)){assignments.push({email,name:nameOf(email),count:list.length,importance:'High',dueDate:fmtDate(due),subject:`[HIGH PRIORITY] Line Observation – ${list.length} point(s) assigned to you – compliance due ${fmtDate(due)}`,bodyHtml:mailBody(nameOf(email),list.map((o,i)=>({...o,n:i+1})),due,link),fileName:`Line_Observation_${nameOf(email).replace(/ /g,'_')}_${today()}.xlsx`,excelBase64:b64(await buildXlsx(list))})}
-    const payload={facility:'AM/NS INDIA',line:$('lineSelect').value,reportedBy:$('observerName').value.trim(),sapId:$('sapId').value.trim(),reviewerEmail:REVIEWER_EMAIL,token,submissionId:sid,dueDate:fmtDate(due),submittedAt:new Date().toISOString(),
-      observations:rows.map((r,i)=>({obsId:r.id,srNo:i+1,date:fmtDate(r.date),location:r.location,observation:r.text,assignToEmail:r.assign,assignToName:nameOf(r.assign),status:r.status,thumb:r.thumb,
+    const assignments=[];for(const [email,list] of Object.entries(groups)){assignments.push({email,name:nameOf(email),count:list.length,importance:'High',dueDate:fmtDate(due),subject:`[HIGH PRIORITY] Line Observation – ${list.length} point(s) assigned to you – compliance due ${fmtDate(due)}`,bodyHtml:mailBody(nameOf(email),list.map((o,i)=>({...o,n:i+1})),due,linkFor(email)),fileName:`Line_Observation_${nameOf(email).replace(/ /g,'_')}_${today()}.xlsx`,excelBase64:b64(await buildXlsx(list))})}
+    const payload={facility:'AM/NS INDIA',line:$('lineSelect').value,reportedBy:$('observerName').value.trim(),sapId:$('sapId').value.trim(),observerEmail:OBSERVER_EMAIL,reviewerEmail:REVIEWER_EMAIL,token:tokens[rows[0].assign],submissionId:sid,dueDate:fmtDate(due),submittedAt:new Date().toISOString(),
+      observations:rows.map((r,i)=>({obsId:r.id,srNo:i+1,date:fmtDate(r.date),location:r.location,observation:r.text,assignToEmail:r.assign,assignToName:nameOf(r.assign),token:tokens[r.assign],status:r.status,thumb:r.thumb,
         photos:r.photos.map((p,k)=>({fileName:`${r.id}_${k+1}.jpg`,contentBase64:p.data}))})),assignments};
     st.innerHTML='<span style="color:#F59E0B">⏳ Sending...</span>';
     const res=await fetch(FLOW_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
