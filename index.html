@@ -141,7 +141,7 @@ body{background:linear-gradient(-45deg,#0F172A,#1E293B,#3b0a14,#0F172A);backgrou
 /* ===== CONFIGURE THESE 3 LINES ===== */
 const FLOW_URL='https://default37cd273a1cec4aaea29741480ea54f.8d.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/11/workflows/67b9431663ac484f97d054e320d27af8/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=1fDTD1W5AtePZQ2UrOD1t5lp8Nd2CZxCEBjnauRwApQ';        // HTTP POST URL of flow 1
 const RESPONSE_URL='https://rahulamns0208.github.io/obs-close-/';         // where you host response.html (https://...)
-const OBSERVER_EMAIL='dattu.labade@amns.in';          // Dattu Labade's mailbox – closure report is sent back here
+const OBSERVER_EMAIL='dattu.labadeL@amns.in';          // Dattu Labade's mailbox – closure report is sent back here
 const REVIEWER_EMAIL='PASTE_REVIEWER_EMAIL@amns.in';            // optional reviewer/central compliance email, configured by admin
 /* ==================================== */
 const mkToken=()=>(crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2)).replace(/-/g,'');
@@ -209,17 +209,17 @@ const fmtDate=d=>d?d.split('-').reverse().join('.'):'';
 function shrink(file,max=800,q=.6){return new Promise(res=>{const r=new FileReader();r.onload=e=>{const i=new Image();i.onload=()=>{const s=Math.min(1,max/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=Math.round(i.width*s);c.height=Math.round(i.height*s);c.getContext('2d').drawImage(i,0,0,c.width,c.height);res({data:c.toDataURL('image/jpeg',q).split(',')[1],w:c.width,h:c.height})};i.onerror=()=>res(null);i.src=e.target.result};r.readAsDataURL(file)})}
 async function buildXlsx(rows){
   const wb=new ExcelJS.Workbook(),ws=wb.addWorksheet('Sheet1');
-  [6,13,12,20,38,18,40,26,12,28,24,22,16].forEach((w,i)=>ws.getColumn(i+1).width=w);
+  [6,13,12,20,38,30,18,40,40,12,34,24,22,16].forEach((w,i)=>ws.getColumn(i+1).width=w);
   const fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFCE4D6'}},thin={style:'thin'},med={style:'medium'};
-  ws.mergeCells('A1:M1');const t=ws.getCell('A1');t.value=`AM/NS INDIA — Line Observation Report — ${$('lineSelect').value}`;t.font={name:'Arial',size:14,bold:true};t.fill=fill;t.alignment={horizontal:'center',vertical:'middle'};ws.getRow(1).height=30;
-  ['Sr. No','Date','Line','Location','Observation','Responsibility','Photos','AFTER \nPHOTO','Status','Corrective action/\nRecommendation','Obs ID','Observer Name','Observer SAP ID'].forEach((h,i)=>{const c=ws.getCell(2,i+1);c.value=h;c.font={name:'Arial',size:12,bold:true};c.fill=fill;c.alignment={horizontal:'center',vertical:'middle',wrapText:true};c.border={top:med,bottom:med,left:thin,right:thin}});ws.getRow(2).height=47;
+  ws.mergeCells('A1:N1');const t=ws.getCell('A1');t.value=`AM/NS INDIA — Line Observation Report — ${$('lineSelect').value}`;t.font={name:'Arial',size:14,bold:true};t.fill=fill;t.alignment={horizontal:'center',vertical:'middle'};ws.getRow(1).height=30;
+  ['Sr. No','Date','Line','Location','Observation','Recommended action\n(by Observer)','Responsibility','Photos\n(BEFORE)','AFTER \nPHOTO','Status','Corrective action\ntaken','Obs ID','Observer Name','Observer SAP ID'].forEach((h,i)=>{const c=ws.getCell(2,i+1);c.value=h;c.font={name:'Arial',size:12,bold:true};c.fill=fill;c.alignment={horizontal:'center',vertical:'middle',wrapText:true};c.border={top:med,bottom:med,left:thin,right:thin}});ws.getRow(2).height=47;
   const colPx=40*7+5,TW=130,TH=98;
   for(let n=0;n<rows.length;n++){const o=rows[n],r=n+3,ph=o.photos||[],pr=Math.max(1,Math.ceil(ph.length/2)),rowPx=Math.max(110,pr*(TH+8)+8);
-    [n+1,fmtDate(o.date),$('lineSelect').value,o.location,o.text,nameOf(o.assign),'','',o.status,o.reco||'',o.id,$('observerName').value.trim(),$('sapId').value.trim()].forEach((v,i)=>{const c=ws.getCell(r,i+1);c.value=v;c.font={name:'Arial',size:12};c.alignment={horizontal:'center',vertical:'middle',wrapText:true};c.border={top:thin,bottom:thin,left:thin,right:thin}});
-    ws.getCell(r,9).dataValidation={type:'list',allowBlank:true,formulae:['"Open,Closed"']};
-    const hPt=Math.max(rowPx*.75,Math.ceil(o.text.length/38)*16+10);ws.getRow(r).height=hPt;const actPx=hPt/.75;
+    [n+1,fmtDate(o.date),$('lineSelect').value,o.location,o.text,o.reco||'',nameOf(o.assign),'','',o.status,'',o.id,$('observerName').value.trim(),$('sapId').value.trim()].forEach((v,i)=>{const c=ws.getCell(r,i+1);c.value=v;c.font={name:'Arial',size:12};c.alignment={horizontal:'center',vertical:'middle',wrapText:true};c.border={top:thin,bottom:thin,left:thin,right:thin}});
+    ws.getCell(r,10).dataValidation={type:'list',allowBlank:true,formulae:['"Open,Closed"']};
+    const hPt=Math.max(rowPx*.75,Math.ceil(Math.max(o.text.length,(o.reco||'').length)/38)*16+10);ws.getRow(r).height=hPt;const actPx=hPt/.75;
     ph.forEach((p,k)=>{const s=Math.min(TW/p.w,TH/p.h),w=p.w*s,h=p.h*s,x=8+(k%2)*(TW+8),y=8+Math.floor(k/2)*(TH+8);
-      const id=wb.addImage({base64:p.data,extension:'jpeg'});ws.addImage(id,{tl:{col:6+x/colPx,row:r-1+y/actPx},ext:{width:w,height:h},editAs:'oneCell'})})}
+      const id=wb.addImage({base64:p.data,extension:'jpeg'});ws.addImage(id,{tl:{col:7+x/colPx,row:r-1+y/actPx},ext:{width:w,height:h},editAs:'oneCell'})})}
   return wb.xlsx.writeBuffer();
 }
 const plus=(n)=>{const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)};
