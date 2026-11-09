@@ -116,6 +116,48 @@ body{background:linear-gradient(-45deg,#0F172A,#1E293B,#3b0a14,#0F172A);backgrou
 .ok-card h2{margin:12px 0 6px;color:#1E293B}.ok-card p{color:#475569;font-size:14px;line-height:1.5;margin-bottom:18px}
 .confetti{position:fixed;top:-12px;width:9px;height:14px;z-index:130;animation:fall linear forwards}@keyframes fall{to{transform:translateY(105vh) rotate(720deg);opacity:.8}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+
+/* Responsive layout adjustments only */
+@media (max-width: 1024px) {
+  body { padding: 16px; }
+  .main-wrapper { width: 100%; }
+  .audit-meta-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .obs-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  body { padding: 8px; }
+  .main-wrapper { border-radius: 12px; }
+  .app-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .header-brand { min-width: 0; width: 100%; }
+  .header-brand h1 { font-size: clamp(18px, 5vw, 24px); line-height: 1.25; overflow-wrap: anywhere; }
+  .logo-badge { align-self: flex-start; }
+  .audit-meta-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 14px; }
+  .input-field input, .input-field select, .input-field textarea { width: 100%; min-width: 0; max-width: 100%; }
+  .score-summary-bar { gap: 10px; padding: 14px; }
+  .audit-body { padding: 12px; }
+  .category-title { padding: 12px 14px; flex-wrap: wrap; }
+  .rm-obs { margin-left: auto; }
+  .obs-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 14px; }
+  .obs-grid .full { grid-column: auto; }
+  .photo-controls { align-items: stretch; }
+  .photo-controls .btn-select-photo { text-align: center; }
+  .preview-container { gap: 8px; }
+  .preview-thumb { width: 58px; height: 58px; }
+  .dock-footer { padding: 16px 14px; align-items: stretch; }
+  .footer-left { width: 100%; overflow-wrap: anywhere; }
+  .foot-btns { width: 100%; flex-direction: column; }
+  .btn-dl, .btn-submit { width: 100%; max-width: none; }
+  #camModal > div:last-child { width: 100%; justify-content: center; flex-wrap: wrap; }
+}
+@media (max-width: 360px) {
+  .app-header { padding: 14px; }
+  .audit-body { padding: 8px; }
+  .category-title { font-size: 12px; }
+  .obs-grid { padding: 10px; }
+  .st-btn { padding: 9px 6px; font-size: 11px; }
+}
+
 </style></head><body>
 <div class="bg-anim"><span></span><span></span><span></span></div>
 <div class="main-wrapper">
